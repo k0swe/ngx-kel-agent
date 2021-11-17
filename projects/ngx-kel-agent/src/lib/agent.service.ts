@@ -1,14 +1,6 @@
 import {Injectable} from '@angular/core';
-import {
-  BehaviorSubject,
-  debounceTime,
-  delay,
-  ReplaySubject,
-  retryWhen,
-  Subject,
-  Subscription,
-  tap
-} from "rxjs";
+import {BehaviorSubject, ReplaySubject, Subject, Subscription,} from "rxjs";
+import {debounceTime, delay, retryWhen, tap} from "rxjs/operators";
 import {webSocket, WebSocketSubject} from "rxjs/webSocket";
 import {
   HamlibRigState,
