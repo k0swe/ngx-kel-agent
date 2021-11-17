@@ -61,6 +61,8 @@ export class AgentService {
 
   private readonly defaultAgentHost = 'localhost';
   private readonly defaultAgentPort = 8081;
+  private readonly localStorageHostKey = 'agent-host';
+  private readonly localStoragePortKey = 'agent-port';
 
   private agentHost: string = this.defaultAgentHost;
   private agentPort: number = this.defaultAgentPort;
@@ -185,12 +187,12 @@ export class AgentService {
 
   /** Get the currently configured kel-agent host. */
   public getHost(): string {
-    return localStorage.getItem('agent-host') || this.defaultAgentHost;
+    return localStorage.getItem(this.localStorageHostKey) || this.defaultAgentHost;
   }
 
   /** Get the currently configured kel-agent port. */
   public getPort(): number {
-    let portStr = localStorage.getItem('agent-port');
+    let portStr = localStorage.getItem(this.localStoragePortKey);
     if (portStr == null) {
       return this.defaultAgentPort;
     }
@@ -203,13 +205,13 @@ export class AgentService {
 
   /** Set the kel-agent host. */
   public setHost(host: string): void {
-    localStorage.setItem('agent-host', host);
+    localStorage.setItem(this.localStorageHostKey, host);
     this.connect();
   }
 
   /** Set the kel-agent port. */
   public setPort(port: number): void {
-    localStorage.setItem('agent-port', String(port));
+    localStorage.setItem(this.localStoragePortKey, String(port));
     this.connect();
   }
 
