@@ -1,6 +1,19 @@
 {
   "name": "ngx-kel-agent",
   "version": "0.4.4",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/k0swe/ngx-kel-agent/tree/main/projects/ngx-kel-agent#readme",
+  "repository": {
+    "type": "git",
+    "url": "github:k0swe/ngx-kel-agent"
+  },
+  "keywords": [
+    "amateur radio",
+    "angular",
+    "ham radio",
+    "hamlib",
+    "wsjtx"
+  ],
   "peerDependencies": {
     "@angular/common": "^12",
     "@angular/core": "^12",
