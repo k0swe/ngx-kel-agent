@@ -12,6 +12,7 @@ import {
   WsjtxLoggedAdif,
   WsjtxQsoLogged,
   WsjtxReplay,
+  WsjtxReply,
   WsjtxStatus,
   WsjtxWsprDecode
 } from "./messages";
@@ -269,6 +270,26 @@ export class AgentService {
       wsjtx: {
         type: 'HaltTxMessage',
         payload: <WsjtxHaltTx>{id: this.wsjtxId, autoTxOnly: true},
+      },
+    };
+    this.agentWebSocketSubject?.next(wsMsg);
+  }
+
+  /** Send a command to WSJT-X to reply to the given decode. The message must include CQ or QRZ. */
+  public sendWsjtxReply(decode: WsjtxDecode) {
+    const wsMsg = {
+      wsjtx: {
+        type: 'ReplyMessage',
+        payload: <WsjtxReply>{
+          id: decode.id,
+          time: decode.time,
+          snr: decode.snr,
+          deltaTime: decode.deltaTime,
+          deltaFrequency: decode.deltaFrequency,
+          mode: decode.mode,
+          message: decode.message,
+          lowConfidence: decode.lowConfidence,
+        },
       },
     };
     this.agentWebSocketSubject?.next(wsMsg);
