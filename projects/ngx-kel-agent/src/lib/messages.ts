@@ -129,14 +129,26 @@ export interface WsjtxClear {
  * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l255).
  */
 export interface WsjtxReply {
+  /** WSJT-X client name */
   id: string;
+  /** Clock time in milliseconds since midnight */
   time: number;
+  /** Local station's perceived signal to noise ratio */
   snr: number;
+  /** The perceived clock differential between the local station and remote station, in seconds. */
   deltaTime: number;
+  /** The decode's frequency in hertz above the dial frequency */
   deltaFrequency: number;
+  /** The protocol of the decoded message */
   mode: string;
+  /** The message payload contained in the decode */
   message: string;
   lowConfidence: boolean;
+  /**
+   * The  Modifiers   field  allows  the  equivalent   of  keyboard
+   * modifiers to be sent "as if" those modifier keys where pressed
+   * while  double-clicking  the  specified  decoded  message. See
+   * the WSJT-X source link above. */
   modifiers: number;
 }
 
@@ -246,7 +258,9 @@ export interface WsjtxHaltTx {
 export interface WsjtxFreeText {
   /** WSJT-X client name */
   id: string;
+  /** Custom text to send. May be truncated if too long */
   text: string;
+  /** Whether to also click "Now" to begin transmitting when appropriate */
   send: boolean;
 }
 
@@ -293,6 +307,7 @@ export interface WsjtxWsprDecode {
 export interface WsjtxLocation {
   /** WSJT-X client name */
   id: string;
+  /** Maidenhead grid to set as the local station's position */
   location: string;
 }
 
@@ -323,9 +338,15 @@ export interface WsjtxLoggedAdif {
 export interface WsjtxHighlightCallsign {
   /** WSJT-X client name */
   id: string;
+  /** Which callsign to highlight */
   callsign: string;
+  /** Background color (format?) */
   backgroundColor: string;
+  /** Foreground color (format?) */
   foregroundColor: string;
+  /** The "Highlight last"  field allows the sender  to request that
+   * all instances of  "Callsign" in the last  period only, instead
+   * of all instances in all periods, be highlighted. */
   highlightLast: boolean;
   /** Whether to reset the highlighting to default (overrides background and foreground colors) */
   reset: boolean;
@@ -340,7 +361,9 @@ export interface WsjtxHighlightCallsign {
  * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l445).
  */
 export interface WsjtxSwitchConfiguration {
+  /** WSJT-X client name */
   id: string;
+  /** New configuration set to use (must already exist) */
   configurationName: string;
 }
 
@@ -356,15 +379,23 @@ export interface WsjtxSwitchConfiguration {
  * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l479).
  */
 export interface WsjtxConfigure {
+  /** WSJT-X client name */
   id: string;
+  /** Which protocol to decode and send */
   mode: string;
   frequencyTolerance: number;
+  /** Which sub-protocol to decode and send */
   submode: string;
   fastMode: boolean;
+  /** Which protocol to decode and send */
   trPeriod: number;
+  /** Receive delta (above dial) frequency in hertz(?) */
   rxDF: number
+  /** The remote station's callsign */
   dxCall: string;
+  /** The remote station's Maidenhead grid */
   dxGrid: string;
+  /** Regenerate the standard messages */
   generateMessages: boolean;
 }
 
