@@ -1,0 +1,7 @@
+{
+  "entryPoints": [
+    "./dist/ngx-kel-agent/"
+  ],
+  "entryPointStrategy": "Packages",
+  "out": "doc"
+}
