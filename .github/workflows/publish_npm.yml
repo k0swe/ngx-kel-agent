@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
       - name: Extract version tag
@@ -32,9 +31,10 @@ jobs:
           npm run build
 
       - name: Publish
-        run: |
-          cd dist/ngx-kel-agent
-          npm publish
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          package: dist/ngx-kel-agent/package.json
 
       - name: Create Release
         uses: actions/create-release@v1
