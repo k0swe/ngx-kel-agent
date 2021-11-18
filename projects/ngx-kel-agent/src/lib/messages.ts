@@ -117,6 +117,30 @@ export interface WsjtxClear {
 }
 
 /**
+ * In order for a server  to provide a useful cooperative service
+ * to WSJT-X it  is possible for it to initiate  a QSO by sending
+ * this message to a client. WSJT-X filters this message and only
+ * acts upon it  if the message exactly describes  a prior decode
+ * and that decode  is a CQ or QRZ message.   The action taken is
+ * exactly equivalent to the user  double clicking the message in
+ * the "Band activity" window.
+ *
+ * See
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l255).
+ */
+export interface WsjtxReply {
+  id: string;
+  time: number;
+  snr: number;
+  deltaTime: number;
+  deltaFrequency: number;
+  mode: string;
+  message: string;
+  lowConfidence: boolean;
+  modifiers: number;
+}
+
+/**
  * The QSO logged message is sent when the WSJT-X user accepts the "Log  QSO" dialog by clicking
  * the "OK" button.
  *
@@ -154,6 +178,8 @@ export interface WsjtxQsoLogged {
   txPower: string;
   /** WSJT-X client name */
   id: string;
+  /** Propagation mode using ADIF enumerations */
+  propagationMode: string;
 }
 
 /**
@@ -205,6 +231,26 @@ export interface WsjtxHaltTx {
 }
 
 /**
+ * This message  allows the server  to set the current  free text
+ * message content. Sending this  message with a non-empty "Text"
+ * field is equivalent to typing  a new message (old contents are
+ * discarded) in to  the WSJT-X free text message  field or "Tx5"
+ * field (both  are updated) and if  the "Send" flag is  set then
+ * clicking the "Now" radio button for the "Tx5" field if tab one
+ * is current or clicking the "Free  msg" radio button if tab two
+ * is current.
+ *
+ * See
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l352).
+ */
+export interface WsjtxFreeText {
+  /** WSJT-X client name */
+  id: string;
+  text: string;
+  send: boolean;
+}
+
+/**
  * The decode message is sent when  a new decode is completed, in
  * this case the 'New' field is true.
  *
@@ -235,6 +281,22 @@ export interface WsjtxWsprDecode {
 }
 
 /**
+ * This  message allows  the server  to set  the current  current
+ * geographical location  of operation. The supplied  location is
+ * not persistent but  is used as a  session lifetime replacement
+ * loction that overrides the Maidenhead  grid locater set in the
+ * application  settings.
+ *
+ * See
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l406).
+ */
+export interface WsjtxLocation {
+  /** WSJT-X client name */
+  id: string;
+  location: string;
+}
+
+/**
  * The  logged ADIF  message is  sent to  the server(s)  when the
  * WSJT-X user accepts the "Log  QSO" dialog by clicking the "OK"
  * button.
@@ -247,6 +309,63 @@ export interface WsjtxLoggedAdif {
   id: string;
   /** ADIF encoded QSO data */
   adif: string;
+}
+
+/**
+ * The server  may send  this message at  any time.   The message
+ * specifies  the background  and foreground  color that  will be
+ * used  to  highlight  the  specified callsign  in  the  decoded
+ * messages  printed  in the  Band  Activity  panel.
+ *
+ * See
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l444).
+ */
+export interface WsjtxHighlightCallsign {
+  /** WSJT-X client name */
+  id: string;
+  callsign: string;
+  backgroundColor: string;
+  foregroundColor: string;
+  highlightLast: boolean;
+  /** Whether to reset the highlighting to default (overrides background and foreground colors) */
+  reset: boolean;
+}
+
+/**
+ * The server  may send  this message at  any time.   The message
+ * specifies the name of the  configuration to switch to. The new
+ * configuration must exist.
+ *
+ * See
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l445).
+ */
+export interface WsjtxSwitchConfiguration {
+  id: string;
+  configurationName: string;
+}
+
+/**
+ * The server  may send  this message at  any time.   The message
+ * specifies  various  configuration  options.  For  utf8  string
+ * fields an empty value implies no change, for the quint32 Rx DF
+ * and  Frequency  Tolerance  fields the  maximum  quint32  value
+ * implies  no change.   Invalid or  unrecognized values  will be
+ * silently ignored.
+ *
+ * See
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l479).
+ */
+export interface WsjtxConfigure {
+  id: string;
+  mode: string;
+  frequencyTolerance: number;
+  submode: string;
+  fastMode: boolean;
+  trPeriod: number;
+  rxDF: number
+  dxCall: string;
+  dxGrid: string;
+  generateMessages: boolean;
 }
 
 export interface HamlibRigState {
