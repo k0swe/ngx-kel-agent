@@ -1,0 +1,31 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - *
+    tags-ignore:
+      # https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+      - ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+  pull_request:
+    branches:
+      - *
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    steps:
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.4.1
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Test
+        run: |
+          npm install
+          # npm run test-ci
+          npm run build
