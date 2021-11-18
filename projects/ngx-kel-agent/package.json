@@ -4,7 +4,7 @@
   "peerDependencies": {
     "@angular/common": "13.x",
     "@angular/core": "13.x",
-    "rxjs": "6.x"
+    "rxjs": ">= 6.0 < 7"
   },
   "dependencies": {
     "tslib": "^2.3.0"
