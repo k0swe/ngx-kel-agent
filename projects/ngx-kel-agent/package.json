@@ -20,6 +20,6 @@
     "rxjs": "~6.x"
   },
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "2.3.1"
   }
 }
