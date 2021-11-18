@@ -7,7 +7,7 @@
  *    after it receives  the initial heartbeat message  from a client.
  *
  * See
- * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/8f99fcceffc76c986413e22ed25b93ef3fc66f1e/tree/Network/NetworkMessage.hpp#l110).
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l110).
  */
 export interface WsjtxHeartbeat {
   /** WSJT-X client name */
@@ -26,7 +26,7 @@ export interface WsjtxHeartbeat {
  * client without the need for  polling commands.
  *
  * See
- * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/8f99fcceffc76c986413e22ed25b93ef3fc66f1e/tree/Network/NetworkMessage.hpp#l141).
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l141).
  */
 export interface WsjtxStatus {
   configName: string;
@@ -76,7 +76,7 @@ export interface WsjtxStatus {
  * as a one of these messages  with the 'New' field set to false.
  *
  * See
- * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/8f99fcceffc76c986413e22ed25b93ef3fc66f1e/tree/Network/NetworkMessage.hpp#l206).
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l208).
  */
 export interface WsjtxDecode {
   /** The decode's frequency in hertz above the dial frequency */
@@ -106,7 +106,7 @@ export interface WsjtxDecode {
  * no long available for actioning  with a "Reply" message.
  *
  * See
- * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/8f99fcceffc76c986413e22ed25b93ef3fc66f1e/tree/Network/NetworkMessage.hpp#l232).
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l234).
  */
 export interface WsjtxClear {
   /** WSJT-X client name */
@@ -121,7 +121,7 @@ export interface WsjtxClear {
  * the "OK" button.
  *
  * See
- * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/8f99fcceffc76c986413e22ed25b93ef3fc66f1e/tree/Network/NetworkMessage.hpp#l293).
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l295).
  */
 export interface WsjtxQsoLogged {
   comments: string;
@@ -161,7 +161,7 @@ export interface WsjtxQsoLogged {
  * down gracefully.
  *
  * See
- * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/8f99fcceffc76c986413e22ed25b93ef3fc66f1e/tree/Network/NetworkMessage.hpp#l318).
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l320).
  */
 export interface WsjtxClose {
   /** WSJT-X client name */
@@ -209,7 +209,7 @@ export interface WsjtxHaltTx {
  * this case the 'New' field is true.
  *
  * See
- * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/8f99fcceffc76c986413e22ed25b93ef3fc66f1e/tree/Network/NetworkMessage.hpp#l381).
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l383).
  */
 export interface WsjtxWsprDecode {
   /** WSJT-X client name */
@@ -240,7 +240,7 @@ export interface WsjtxWsprDecode {
  * button.
  *
  * See
- * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/8f99fcceffc76c986413e22ed25b93ef3fc66f1e/tree/Network/NetworkMessage.hpp#l421).
+ * [WSJT-X source](https://sourceforge.net/p/wsjt/wsjtx/ci/wsjtx-2.5.2/tree/Network/NetworkMessage.hpp#l423).
  */
 export interface WsjtxLoggedAdif {
   /** WSJT-X client name */
