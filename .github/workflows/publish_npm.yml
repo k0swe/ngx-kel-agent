@@ -41,3 +41,27 @@ jobs:
         with:
           tag_name: ${{ steps.vars.outputs.tag }}
           release_name: ${{ steps.vars.outputs.tag }}
+
+      - name: Setup git user/email
+        run: |
+          git config --global user.name github-actions
+          git config --global user.email github-actions@github.com
+
+      - name: Checkout documentation
+        uses: actions/checkout@v2
+        with:
+          ref: doc
+          path: doc
+
+      - name: Generate documentation
+        run: |
+          mv doc/.git .docgit
+          npm run typedoc
+          mv .docgit doc/.git
+
+      - name: Publish documentation
+        COMMIT=`git rev-parse --short HEAD`
+        cd doc
+        git add -A
+        git commit -m "Generated documentation at $COMMIT"
+        git push origin doc
