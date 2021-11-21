@@ -1,22 +1,21 @@
-import { Injectable } from '@angular/core';
 import { BehaviorSubject, ReplaySubject, Subject, Subscription } from 'rxjs';
-import { debounceTime, delay, retryWhen, tap } from 'rxjs/operators';
-import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
+import { HamlibRigState } from './hamlib-messages';
+import { HamlibService } from './hamlib.service';
+import { Injectable } from '@angular/core';
 import {
-  HamlibRigState,
   WsjtxClear,
   WsjtxClose,
   WsjtxDecode,
-  WsjtxHaltTx,
   WsjtxHeartbeat,
   WsjtxHighlightCallsign,
   WsjtxLoggedAdif,
   WsjtxQsoLogged,
-  WsjtxReplay,
-  WsjtxReply,
   WsjtxStatus,
   WsjtxWsprDecode,
-} from './messages';
+} from './wsjtx-messages';
+import { WsjtxService } from './wsjtx.service';
+import { delay, retryWhen, tap } from 'rxjs/operators';
+import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
 @Injectable({
   providedIn: 'root',
@@ -26,32 +25,77 @@ export class AgentService {
   public readonly connectedState$ = new BehaviorSubject<boolean>(false);
 
   /*  WSJT-X  */
-  /** Whether we're getting any messages from WSJT-X. */
-  public readonly wsjtxState$ = new BehaviorSubject<boolean>(false);
-  /** Subject for listening to WSJT-X "Heartbeat" messages. */
-  public readonly wsjtxHeartbeat$ = new ReplaySubject<WsjtxHeartbeat | null>(1);
-  /** Subject for listening to WSJT-X "Status" messages. */
-  public readonly wsjtxStatus$ = new ReplaySubject<WsjtxStatus | null>(1);
-  /** Subject for listening to WSJT-X "Decode" messages. */
-  public readonly wsjtxDecode$ = new Subject<WsjtxDecode>();
-  /** Subject for listening to WSJT-X "Clear" messages. */
-  public readonly wsjtxClear$ = new Subject<WsjtxClear>();
-  /** Subject for listening to WSJT-X "QsoLogged" messages. */
-  public readonly wsjtxQsoLogged$ = new Subject<WsjtxQsoLogged>();
-  /** Subject for listening to WSJT-X "Close" messages. */
-  public readonly wsjtxClose$ = new Subject<WsjtxClose>();
-  /** Subject for listening to WSJT-X "WsprDecode" messages. */
-  public readonly wsjtxWsprDecode$ = new Subject<WsjtxWsprDecode>();
-  /** Subject for listening to WSJT-X "LoggedAdif" messages. */
-  public readonly wsjtxLoggedAdif$ = new Subject<WsjtxLoggedAdif>();
+  /**
+   * Whether we're getting any messages from WSJT-X.
+   *
+   * @deprecated Use {@link WsjtxService.connected$} instead.
+   */
+  public readonly wsjtxState$: BehaviorSubject<boolean>;
+  /**
+   * Subject for listening to WSJT-X "Heartbeat" messages.
+   *
+   * @deprecated Use {@link WsjtxService.heartbeat$} instead.
+   */
+  public readonly wsjtxHeartbeat$: ReplaySubject<WsjtxHeartbeat | null>;
+  /**
+   * Subject for listening to WSJT-X "Status" messages.
+   *
+   * @deprecated Use {@link WsjtxService.status$} instead.
+   */
+  public readonly wsjtxStatus$: ReplaySubject<WsjtxStatus | null>;
+  /**
+   * Subject for listening to WSJT-X "Decode" messages.
+   *
+   * @deprecated Use {@link WsjtxService.decode$} instead.
+   */
+  public readonly wsjtxDecode$: Subject<WsjtxDecode>;
+  /**
+   * Subject for listening to WSJT-X "Clear" messages.
+   *
+   * @deprecated Use {@link WsjtxService.clear$} instead.
+   */
+  public readonly wsjtxClear$: Subject<WsjtxClear>;
+  /**
+   * Subject for listening to WSJT-X "QsoLogged" messages.
+   *
+   * @deprecated Use {@link WsjtxService.qsoLogged$} instead.
+   */
+  public readonly wsjtxQsoLogged$: Subject<WsjtxQsoLogged>;
+  /**
+   * Subject for listening to WSJT-X "Close" messages.
+   *
+   * @deprecated Use {@link WsjtxService.close$} instead.
+   */
+  public readonly wsjtxClose$: Subject<WsjtxClose>;
+  /**
+   * Subject for listening to WSJT-X "WsprDecode" messages.
+   *
+   * @deprecated Use {@link WsjtxService.wsprDecode$} instead.
+   */
+  public readonly wsjtxWsprDecode$: Subject<WsjtxWsprDecode>;
+  /**
+   * Subject for listening to WSJT-X "LoggedAdif" messages.
+   *
+   * @deprecated Use {@link WsjtxService.loggedAdif$} instead.
+   */
+  public readonly wsjtxLoggedAdif$: Subject<WsjtxLoggedAdif>;
 
   /*  Hamlib  */
-  /** Whether we're getting any messages from Hamlib. */
-  public readonly hamlibState$ = new BehaviorSubject<boolean>(false);
-  /** Subject for listening to Hamlib "RigState" messages. */
-  public readonly hamlibRigState$ = new BehaviorSubject<HamlibRigState | null>(
-    null
-  );
+  /**
+   * Whether we're getting any messages from Hamlib.
+   *
+   * @deprecated Use {@link HamlibService.connected$} instead.
+   */
+  public readonly hamlibState$: BehaviorSubject<boolean>;
+  /**
+   * Subject for listening to Hamlib "RigState" messages.
+   *
+   * @deprecated Use {@link HamlibService.rigState$} instead.
+   */
+  public readonly hamlibRigState$: BehaviorSubject<HamlibRigState | null>;
+
+  private hamlibService: HamlibService;
+  private wsjtxService: WsjtxService;
 
   private readonly defaultAgentHost = 'localhost';
   private readonly defaultAgentPort = 8081;
@@ -62,47 +106,30 @@ export class AgentService {
   private agentPort: number = this.defaultAgentPort;
   private agentWebSocketSubject: WebSocketSubject<object> | null = null;
   private agentWebsocketSubscription: Subscription | null = null;
-  private wsjtxId: string = 'WSJT-X';
 
-  constructor() {}
+  constructor() {
+    this.hamlibService = new HamlibService(this);
+    this.hamlibState$ = this.hamlibService.connected$;
+    this.hamlibRigState$ = this.hamlibService.rigState$;
+
+    this.wsjtxService = new WsjtxService(this);
+    this.wsjtxState$ = this.wsjtxService.connected$;
+    this.wsjtxHeartbeat$ = this.wsjtxService.heartbeat$;
+    this.wsjtxStatus$ = this.wsjtxService.status$;
+    this.wsjtxDecode$ = this.wsjtxService.decode$;
+    this.wsjtxClear$ = this.wsjtxService.clear$;
+    this.wsjtxQsoLogged$ = this.wsjtxService.qsoLogged$;
+    this.wsjtxClose$ = this.wsjtxService.close$;
+    this.wsjtxWsprDecode$ = this.wsjtxService.wsprDecode$;
+    this.wsjtxLoggedAdif$ = this.wsjtxService.loggedAdif$;
+  }
 
   public init(): void {
+    this.hamlibService.setupBehaviors();
+    this.wsjtxService.setupBehaviors();
     this.agentHost = this.getHost();
     this.agentPort = this.getPort();
-    this.setupWsjtxBehaviors();
-    this.setupHamlibBehaviors();
     this.connect();
-  }
-
-  private setupWsjtxBehaviors(): void {
-    // if we haven't heard from WSJT-X in 15 seconds, consider it "down"
-    this.wsjtxState$
-      .pipe(debounceTime(15000))
-      .subscribe(() => this.wsjtxState$.next(false));
-    // When WSJT-X announces it's closing, set it to "down" immediately
-    this.wsjtxClose$.subscribe(() => {
-      this.wsjtxState$.next(false);
-    });
-    // When WSJT-X goes down, clear its persistent message subjects
-    this.wsjtxState$.subscribe((isUp) => {
-      if (!isUp) {
-        this.wsjtxHeartbeat$.next(null);
-        this.wsjtxStatus$.next(null);
-      }
-    });
-  }
-
-  private setupHamlibBehaviors(): void {
-    // if we haven't heard from Hamlib in 15 seconds, consider it down
-    this.hamlibState$.pipe(debounceTime(15000)).subscribe(() => {
-      this.hamlibState$.next(false);
-    });
-    // When Hamlib goes down, clear its persistent message subjects
-    this.hamlibState$.subscribe((isUp) => {
-      if (!isUp) {
-        this.hamlibRigState$.next(null);
-      }
-    });
   }
 
   /** Connect (or reconnect) the websocket to the kel-agent server. */
@@ -139,42 +166,10 @@ export class AgentService {
 
   private handleMessage(msg: any): void {
     if (msg.wsjtx != null && msg.wsjtx.type != null) {
-      this.wsjtxState$.next(true);
-      this.wsjtxId = msg.wsjtx.payload.id;
-      switch (msg.wsjtx.type) {
-        case 'HeartbeatMessage':
-          this.wsjtxHeartbeat$.next(msg.wsjtx.payload as WsjtxHeartbeat);
-          return;
-        case 'StatusMessage':
-          this.wsjtxStatus$.next(msg.wsjtx.payload as WsjtxStatus);
-          return;
-        case 'DecodeMessage':
-          this.wsjtxDecode$.next(msg.wsjtx.payload as WsjtxDecode);
-          return;
-        case 'ClearMessage':
-          this.wsjtxClear$.next(msg.wsjtx.payload as WsjtxClear);
-          return;
-        case 'QsoLoggedMessage':
-          this.wsjtxQsoLogged$.next(msg.wsjtx.payload as WsjtxQsoLogged);
-          return;
-        case 'CloseMessage':
-          this.wsjtxClose$.next(msg.wsjtx.payload as WsjtxClose);
-          return;
-        case 'WSPRDecodeMessage':
-          this.wsjtxWsprDecode$.next(msg.wsjtx.payload as WsjtxWsprDecode);
-          return;
-        case 'LoggedAdifMessage':
-          this.wsjtxLoggedAdif$.next(msg.wsjtx.payload as WsjtxLoggedAdif);
-          return;
-      }
+      this.wsjtxService.handleMessage(msg);
     }
     if (msg.hamlib !== null) {
-      this.hamlibState$.next(true);
-      switch (msg.hamlib.type) {
-        case 'RigState':
-          this.hamlibRigState$.next(msg.hamlib.payload as HamlibRigState);
-          return;
-      }
+      this.hamlibService.handleMessage(msg);
     }
   }
 
@@ -210,121 +205,89 @@ export class AgentService {
     this.connect();
   }
 
-  /** Send a command to WSJT-X to clear the Band Activity window. */
+  send(wsMsg: any) {
+    this.agentWebSocketSubject?.next(wsMsg);
+  }
+
+  /**
+   * Send a command to WSJT-X to clear the Band Activity window.
+   *
+   * @deprecated Use {@link WsjtxService.clearBandActivity} instead.
+   */
   public sendWsjtxClearBandActivity() {
-    const wsMsg = {
-      wsjtx: {
-        type: 'ClearMessage',
-        payload: <WsjtxClear>{ id: this.wsjtxId, window: 0 },
-      },
-    };
-    this.agentWebSocketSubject?.next(wsMsg);
+    this.wsjtxService.clearBandActivity();
   }
 
-  /** Send a command to WSJT-X to clear the Rx Frequency window. */
+  /**
+   * Send a command to WSJT-X to clear the Rx Frequency window.
+   *
+   * @deprecated Use {@link WsjtxService.clearRxFreqWindow} instead.
+   */
   public sendWsjtxClearRxFreqWindow() {
-    const wsMsg = {
-      wsjtx: {
-        type: 'ClearMessage',
-        payload: <WsjtxClear>{ id: this.wsjtxId, window: 1 },
-      },
-    };
-    this.agentWebSocketSubject?.next(wsMsg);
+    this.wsjtxService.clearRxFreqWindow();
   }
 
-  /** Send a command to WSJT-X to clear the Band Activity and Rx Frequency windows. */
+  /**
+   * Send a command to WSJT-X to clear the Band Activity and Rx Frequency windows.
+   *
+   * @deprecated Use {@link WsjtxService.clearAll} instead.
+   */
   public sendWsjtxClearAll() {
-    const wsMsg = {
-      wsjtx: {
-        type: 'ClearMessage',
-        payload: <WsjtxClear>{ id: this.wsjtxId, window: 2 },
-      },
-    };
-    this.agentWebSocketSubject?.next(wsMsg);
+    this.wsjtxService.clearAll();
   }
 
-  /** Send a command to WSJT-X to replay messages. Useful for a fresh client that wants to hear
-   * previous WSJT-X decodes. */
+  /**
+   * Send a command to WSJT-X to replay messages. Useful for a fresh client that wants to hear
+   * previous WSJT-X decodes.
+   *
+   * @deprecated Use {@link WsjtxService.replay} instead.
+   */
   public sendWsjtxReplay() {
-    const wsMsg = {
-      wsjtx: {
-        type: 'ReplayMessage',
-        payload: <WsjtxReplay>{ id: this.wsjtxId },
-      },
-    };
-    this.agentWebSocketSubject?.next(wsMsg);
+    this.wsjtxService.replay();
   }
 
-  /** Send a command to WSJT-X to halt any transmissions immediately. */
+  /**
+   * Send a command to WSJT-X to halt any transmissions immediately.
+   *
+   * @deprecated Use {@link WsjtxService.haltTxNow} instead.
+   */
   public sendWsjtxHaltTxNow() {
-    const wsMsg = {
-      wsjtx: {
-        type: 'HaltTxMessage',
-        payload: <WsjtxHaltTx>{ id: this.wsjtxId, autoTxOnly: false },
-      },
-    };
-    this.agentWebSocketSubject?.next(wsMsg);
+    this.wsjtxService.haltTxNow();
   }
 
-  /** Send a command to WSJT-X to stop auto-transmitting after finishing the current round. */
+  /** Send a command to WSJT-X to stop auto-transmitting after finishing the current round.
+   *
+   * @deprecated Use {@link WsjtxService.haltTxAfterCurrent} instead.
+   */
   public sendWsjtxHaltTxAfterCurrent() {
-    const wsMsg = {
-      wsjtx: {
-        type: 'HaltTxMessage',
-        payload: <WsjtxHaltTx>{ id: this.wsjtxId, autoTxOnly: true },
-      },
-    };
-    this.agentWebSocketSubject?.next(wsMsg);
+    this.wsjtxService.haltTxAfterCurrent();
   }
 
-  /** Send a command to WSJT-X to reply to the given decode. The message must include CQ or QRZ. */
+  /**
+   * Send a command to WSJT-X to reply to the given decode. The message must include CQ or QRZ.
+   *
+   * @deprecated Use {@link WsjtxService.reply} instead.
+   */
   public sendWsjtxReply(decode: WsjtxDecode) {
-    const wsMsg = {
-      wsjtx: {
-        type: 'ReplyMessage',
-        payload: <WsjtxReply>{
-          id: decode.id,
-          time: decode.time,
-          snr: decode.snr,
-          deltaTime: decode.deltaTime,
-          deltaFrequency: decode.deltaFrequency,
-          mode: decode.mode,
-          message: decode.message,
-          lowConfidence: decode.lowConfidence,
-        },
-      },
-    };
-    this.agentWebSocketSubject?.next(wsMsg);
+    this.wsjtxService.reply(decode);
   }
 
-  /** Send a command to WSJT-X to reply to the given decode. The message must include CQ or QRZ. */
+  /**
+   * Send a command to WSJT-X to reply to the given decode. The message must include CQ or QRZ.
+   *
+   * @deprecated Use {@link WsjtxService.highlightCallsign} instead.
+   */
   public sendWsjtxHighlightCallsign(highlightMsg: WsjtxHighlightCallsign) {
-    highlightMsg.id = this.wsjtxId;
-    const wsMsg = {
-      wsjtx: {
-        type: 'HighlightCallsignMessage',
-        payload: highlightMsg,
-      },
-    };
-    this.agentWebSocketSubject?.next(wsMsg);
+    this.wsjtxService.highlightCallsign(highlightMsg);
   }
 
-  /** Given a decode message, format a string the same way as displayed in the WSJT-X Band
-   * Activity/Rx Frequency windows. */
+  /**
+   * Given a decode message, format a string the same way as displayed in the WSJT-X Band
+   * Activity/Rx Frequency windows.
+   *
+   * @deprecated Use {@link WsjtxService.formatDecode} instead.
+   */
   public static formatDecode(msg: WsjtxDecode): string {
-    const secondsSinceMidnight = Math.floor(msg.time / 1000);
-    const hours = Math.floor(secondsSinceMidnight / 3600);
-    const secondsSinceHour = secondsSinceMidnight - hours * 3600;
-    const minutes = Math.floor(secondsSinceHour / 60);
-    const seconds = secondsSinceHour - minutes * 60;
-    const timeStr = `${hours.toString().padStart(2, '0')}${minutes
-      .toString()
-      .padStart(2, '0')}${seconds.toString().padStart(2, '0')}`;
-
-    return `${timeStr} ${msg.snr.toString().padStart(3)} ${msg.deltaTime
-      .toFixed(1)
-      .padStart(4)} ${msg.deltaFrequency.toString().padStart(4)} ~  ${
-      msg.message
-    }`;
+    return WsjtxService.formatDecode(msg);
   }
 }

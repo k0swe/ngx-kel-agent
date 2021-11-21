@@ -3,6 +3,9 @@
  */
 
 export * from './lib/agent.service';
-export * from './lib/messages';
+export * from './lib/hamlib-messages';
+export * from './lib/hamlib.service';
+export * from './lib/wsjtx-messages';
+export * from './lib/wsjtx.service';
 // export * from './lib/ngx-kel-agent.component';
 // export * from './lib/ngx-kel-agent.module';
