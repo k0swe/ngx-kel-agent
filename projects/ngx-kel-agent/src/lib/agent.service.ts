@@ -9,6 +9,7 @@ import {
   WsjtxDecode,
   WsjtxHaltTx,
   WsjtxHeartbeat,
+  WsjtxHighlightCallsign,
   WsjtxLoggedAdif,
   WsjtxQsoLogged,
   WsjtxReplay,
@@ -290,6 +291,18 @@ export class AgentService {
           message: decode.message,
           lowConfidence: decode.lowConfidence,
         },
+      },
+    };
+    this.agentWebSocketSubject?.next(wsMsg);
+  }
+
+  /** Send a command to WSJT-X to reply to the given decode. The message must include CQ or QRZ. */
+  public sendWsjtxHighlightCallsign(highlightMsg: WsjtxHighlightCallsign) {
+    highlightMsg.id = this.wsjtxId;
+    const wsMsg = {
+      wsjtx: {
+        type: 'HighlightCallsignMessage',
+        payload: highlightMsg,
       },
     };
     this.agentWebSocketSubject?.next(wsMsg);

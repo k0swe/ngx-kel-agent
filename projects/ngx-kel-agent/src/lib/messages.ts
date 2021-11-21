@@ -340,9 +340,11 @@ export interface WsjtxHighlightCallsign {
   id: string;
   /** Which callsign to highlight */
   callsign: string;
-  /** Background color (format?) */
+  /** Background color. All CSS Color Module Level 4 formats should be valid.
+   * See https://www.w3.org/TR/css-color-4/ */
   backgroundColor: string;
-  /** Foreground color (format?) */
+  /** Foreground color. All CSS Color Module Level 4 formats should be valid.
+   * See https://www.w3.org/TR/css-color-4/ */
   foregroundColor: string;
   /** The "Highlight last"  field allows the sender  to request that
    * all instances of  "Callsign" in the last  period only, instead
