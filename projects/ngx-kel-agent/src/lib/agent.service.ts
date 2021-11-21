@@ -1,3 +1,4 @@
+import { AgentMessageService } from './agent-message.service';
 import { BehaviorSubject, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { HamlibRigState } from './hamlib-messages';
 import { HamlibService } from './hamlib.service';
@@ -94,9 +95,6 @@ export class AgentService {
    */
   public readonly hamlibRigState$: BehaviorSubject<HamlibRigState | null>;
 
-  private hamlibService: HamlibService;
-  private wsjtxService: WsjtxService;
-
   private readonly defaultAgentHost = 'localhost';
   private readonly defaultAgentPort = 8081;
   private readonly localStorageHostKey = 'agent-host';
@@ -107,12 +105,14 @@ export class AgentService {
   private agentWebSocketSubject: WebSocketSubject<object> | null = null;
   private agentWebsocketSubscription: Subscription | null = null;
 
-  constructor() {
-    this.hamlibService = new HamlibService(this);
+  constructor(
+    private messages: AgentMessageService,
+    private hamlibService: HamlibService,
+    private wsjtxService: WsjtxService
+  ) {
     this.hamlibState$ = this.hamlibService.connected$;
     this.hamlibRigState$ = this.hamlibService.rigState$;
 
-    this.wsjtxService = new WsjtxService(this);
     this.wsjtxState$ = this.wsjtxService.connected$;
     this.wsjtxHeartbeat$ = this.wsjtxService.heartbeat$;
     this.wsjtxStatus$ = this.wsjtxService.status$;
@@ -125,8 +125,7 @@ export class AgentService {
   }
 
   public init(): void {
-    this.hamlibService.setupBehaviors();
-    this.wsjtxService.setupBehaviors();
+    this.messages.txMessage$.subscribe((msg) => this.send(msg));
     this.agentHost = this.getHost();
     this.agentPort = this.getPort();
     this.connect();
@@ -157,20 +156,11 @@ export class AgentService {
       .subscribe({
         next: (msg) => {
           this.connectedState$.next(true);
-          this.handleMessage(msg);
+          this.messages.rxMessage$.next(msg);
         },
         error: () => this.connectedState$.next(false),
         complete: () => this.connectedState$.next(false),
       });
-  }
-
-  private handleMessage(msg: any): void {
-    if (msg.wsjtx != null && msg.wsjtx.type != null) {
-      this.wsjtxService.handleMessage(msg);
-    }
-    if (msg.hamlib !== null) {
-      this.hamlibService.handleMessage(msg);
-    }
   }
 
   /** Get the currently configured kel-agent host. */
@@ -205,7 +195,7 @@ export class AgentService {
     this.connect();
   }
 
-  send(wsMsg: any) {
+  private send(wsMsg: any) {
     this.agentWebSocketSubject?.next(wsMsg);
   }
 

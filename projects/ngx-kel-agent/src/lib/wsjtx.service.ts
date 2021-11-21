@@ -15,7 +15,7 @@ import {
   WsjtxWsprDecode,
 } from './wsjtx-messages';
 import { debounceTime } from 'rxjs/operators';
-import { AgentService } from './agent.service';
+import { AgentMessageService } from './agent-message.service';
 
 @Injectable({
   providedIn: 'root',
@@ -42,9 +42,12 @@ export class WsjtxService {
 
   private wsjtxId: string = 'WSJT-X';
 
-  constructor(private agentService: AgentService) {}
+  constructor(private messages: AgentMessageService) {
+    this.setupBehaviors();
+  }
 
   setupBehaviors(): void {
+    this.messages.rxMessage$.subscribe((msg) => this.handleMessage(msg));
     // if we haven't heard from WSJT-X in 15 seconds, consider it "down"
     this.connected$
       .pipe(debounceTime(15000))
@@ -62,7 +65,10 @@ export class WsjtxService {
     });
   }
 
-  handleMessage(msg: any): void {
+  private handleMessage(msg: any): void {
+    if (!msg.wsjtx) {
+      return;
+    }
     this.connected$.next(true);
     this.wsjtxId = msg.wsjtx.payload.id;
     switch (msg.wsjtx.type) {
@@ -101,7 +107,7 @@ export class WsjtxService {
         payload: <WsjtxClear>{ id: this.wsjtxId, window: 0 },
       },
     };
-    this.agentService.send(wsMsg);
+    this.messages.txMessage$.next(wsMsg);
   }
 
   /** Send a command to WSJT-X to clear the Rx Frequency window. */
@@ -112,7 +118,7 @@ export class WsjtxService {
         payload: <WsjtxClear>{ id: this.wsjtxId, window: 1 },
       },
     };
-    this.agentService.send(wsMsg);
+    this.messages.txMessage$.next(wsMsg);
   }
 
   /** Send a command to WSJT-X to clear the Band Activity and Rx Frequency windows. */
@@ -123,7 +129,7 @@ export class WsjtxService {
         payload: <WsjtxClear>{ id: this.wsjtxId, window: 2 },
       },
     };
-    this.agentService.send(wsMsg);
+    this.messages.txMessage$.next(wsMsg);
   }
 
   /** Send a command to WSJT-X to replay messages. Useful for a fresh client that wants to hear
@@ -135,7 +141,7 @@ export class WsjtxService {
         payload: <WsjtxReplay>{ id: this.wsjtxId },
       },
     };
-    this.agentService.send(wsMsg);
+    this.messages.txMessage$.next(wsMsg);
   }
 
   /** Send a command to WSJT-X to halt any transmissions immediately. */
@@ -146,7 +152,7 @@ export class WsjtxService {
         payload: <WsjtxHaltTx>{ id: this.wsjtxId, autoTxOnly: false },
       },
     };
-    this.agentService.send(wsMsg);
+    this.messages.txMessage$.next(wsMsg);
   }
 
   /** Send a command to WSJT-X to stop auto-transmitting after finishing the current round. */
@@ -157,7 +163,7 @@ export class WsjtxService {
         payload: <WsjtxHaltTx>{ id: this.wsjtxId, autoTxOnly: true },
       },
     };
-    this.agentService.send(wsMsg);
+    this.messages.txMessage$.next(wsMsg);
   }
 
   /** Send a command to WSJT-X to reply to the given decode. The message must include CQ or QRZ. */
@@ -177,7 +183,7 @@ export class WsjtxService {
         },
       },
     };
-    this.agentService.send(wsMsg);
+    this.messages.txMessage$.next(wsMsg);
   }
 
   /** Send a command to WSJT-X to reply to the given decode. The message must include CQ or QRZ. */
@@ -189,7 +195,7 @@ export class WsjtxService {
         payload: highlightMsg,
       },
     };
-    this.agentService.send(wsMsg);
+    this.messages.txMessage$.next(wsMsg);
   }
 
   /** Given a decode message, format a string the same way as displayed in the WSJT-X Band
