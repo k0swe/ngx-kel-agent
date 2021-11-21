@@ -1,15 +1,9 @@
-import {NgModule} from '@angular/core';
-import {NgxKelAgentComponent} from './ngx-kel-agent.component';
-
+import { NgModule } from '@angular/core';
+import { NgxKelAgentComponent } from './ngx-kel-agent.component';
 
 @NgModule({
-  declarations: [
-    NgxKelAgentComponent
-  ],
+  declarations: [NgxKelAgentComponent],
   imports: [],
-  exports: [
-    NgxKelAgentComponent
-  ]
+  exports: [NgxKelAgentComponent],
 })
-export class NgxKelAgentModule {
-}
+export class NgxKelAgentModule {}

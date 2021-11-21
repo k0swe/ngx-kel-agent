@@ -1,7 +1,7 @@
-import {Injectable} from '@angular/core';
-import {BehaviorSubject, ReplaySubject, Subject, Subscription,} from "rxjs";
-import {debounceTime, delay, retryWhen, tap} from "rxjs/operators";
-import {webSocket, WebSocketSubject} from "rxjs/webSocket";
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, ReplaySubject, Subject, Subscription } from 'rxjs';
+import { debounceTime, delay, retryWhen, tap } from 'rxjs/operators';
+import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import {
   HamlibRigState,
   WsjtxClear,
@@ -15,11 +15,11 @@ import {
   WsjtxReplay,
   WsjtxReply,
   WsjtxStatus,
-  WsjtxWsprDecode
-} from "./messages";
+  WsjtxWsprDecode,
+} from './messages';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AgentService {
   /** Whether we're connected to the agent. */
@@ -64,8 +64,7 @@ export class AgentService {
   private agentWebsocketSubscription: Subscription | null = null;
   private wsjtxId: string = 'WSJT-X';
 
-  constructor() {
-  }
+  constructor() {}
 
   public init(): void {
     this.agentHost = this.getHost();
@@ -181,7 +180,9 @@ export class AgentService {
 
   /** Get the currently configured kel-agent host. */
   public getHost(): string {
-    return localStorage.getItem(this.localStorageHostKey) || this.defaultAgentHost;
+    return (
+      localStorage.getItem(this.localStorageHostKey) || this.defaultAgentHost
+    );
   }
 
   /** Get the currently configured kel-agent port. */
@@ -214,7 +215,7 @@ export class AgentService {
     const wsMsg = {
       wsjtx: {
         type: 'ClearMessage',
-        payload: <WsjtxClear>{id: this.wsjtxId, window: 0},
+        payload: <WsjtxClear>{ id: this.wsjtxId, window: 0 },
       },
     };
     this.agentWebSocketSubject?.next(wsMsg);
@@ -225,7 +226,7 @@ export class AgentService {
     const wsMsg = {
       wsjtx: {
         type: 'ClearMessage',
-        payload: <WsjtxClear>{id: this.wsjtxId, window: 1},
+        payload: <WsjtxClear>{ id: this.wsjtxId, window: 1 },
       },
     };
     this.agentWebSocketSubject?.next(wsMsg);
@@ -236,7 +237,7 @@ export class AgentService {
     const wsMsg = {
       wsjtx: {
         type: 'ClearMessage',
-        payload: <WsjtxClear>{id: this.wsjtxId, window: 2},
+        payload: <WsjtxClear>{ id: this.wsjtxId, window: 2 },
       },
     };
     this.agentWebSocketSubject?.next(wsMsg);
@@ -248,7 +249,7 @@ export class AgentService {
     const wsMsg = {
       wsjtx: {
         type: 'ReplayMessage',
-        payload: <WsjtxReplay>{id: this.wsjtxId},
+        payload: <WsjtxReplay>{ id: this.wsjtxId },
       },
     };
     this.agentWebSocketSubject?.next(wsMsg);
@@ -259,7 +260,7 @@ export class AgentService {
     const wsMsg = {
       wsjtx: {
         type: 'HaltTxMessage',
-        payload: <WsjtxHaltTx>{id: this.wsjtxId, autoTxOnly: false},
+        payload: <WsjtxHaltTx>{ id: this.wsjtxId, autoTxOnly: false },
       },
     };
     this.agentWebSocketSubject?.next(wsMsg);
@@ -270,7 +271,7 @@ export class AgentService {
     const wsMsg = {
       wsjtx: {
         type: 'HaltTxMessage',
-        payload: <WsjtxHaltTx>{id: this.wsjtxId, autoTxOnly: true},
+        payload: <WsjtxHaltTx>{ id: this.wsjtxId, autoTxOnly: true },
       },
     };
     this.agentWebSocketSubject?.next(wsMsg);

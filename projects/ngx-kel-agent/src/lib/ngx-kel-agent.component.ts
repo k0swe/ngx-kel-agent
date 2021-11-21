@@ -1,20 +1,12 @@
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'lib-ngx-kel-agent',
-  template: `
-    <p>
-      ngx-kel-agent works!
-    </p>
-  `,
-  styles: []
+  template: ` <p>ngx-kel-agent works!</p> `,
+  styles: [],
 })
 export class NgxKelAgentComponent implements OnInit {
+  constructor() {}
 
-  constructor() {
-  }
-
-  ngOnInit(): void {
-  }
-
+  ngOnInit(): void {}
 }

@@ -392,7 +392,7 @@ export interface WsjtxConfigure {
   /** Which protocol to decode and send */
   trPeriod: number;
   /** Receive delta (above dial) frequency in hertz(?) */
-  rxDF: number
+  rxDF: number;
   /** The remote station's callsign */
   dxCall: string;
   /** The remote station's Maidenhead grid */

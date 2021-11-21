@@ -8,9 +8,8 @@ describe('NgxKelAgentComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ NgxKelAgentComponent ]
-    })
-    .compileComponents();
+      declarations: [NgxKelAgentComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {
