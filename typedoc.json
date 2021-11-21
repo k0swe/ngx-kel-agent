@@ -1,8 +1,6 @@
 {
   "tsconfig": "projects/ngx-kel-agent/tsconfig.lib.json",
-  "entryPoints": [
-    "./projects/ngx-kel-agent/src/public-api.ts"
-  ],
+  "entryPoints": ["./projects/ngx-kel-agent/src/public-api.ts"],
   "excludePrivate": true,
   "includeVersion": true,
   "out": "doc"
