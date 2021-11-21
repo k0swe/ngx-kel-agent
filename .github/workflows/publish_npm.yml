@@ -60,8 +60,9 @@ jobs:
           mv .docgit doc/.git
 
       - name: Publish documentation
-        COMMIT=`git rev-parse --short HEAD`
-        cd doc
-        git add -A
-        git commit -m "Generated documentation at $COMMIT"
-        git push origin doc
+        run: |
+          COMMIT=`git rev-parse --short HEAD`
+          cd doc
+          git add -A
+          git commit -m "Generated documentation at $COMMIT"
+          git push origin doc
