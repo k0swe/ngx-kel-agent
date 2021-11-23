@@ -3,15 +3,19 @@ import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import {
   WsjtxClear,
   WsjtxClose,
+  WsjtxConfigure,
   WsjtxDecode,
+  WsjtxFreeText,
   WsjtxHaltTx,
   WsjtxHeartbeat,
   WsjtxHighlightCallsign,
+  WsjtxLocation,
   WsjtxLoggedAdif,
   WsjtxQsoLogged,
   WsjtxReplay,
   WsjtxReply,
   WsjtxStatus,
+  WsjtxSwitchConfiguration,
   WsjtxWsprDecode,
 } from './wsjtx-messages';
 import { debounceTime } from 'rxjs/operators';
@@ -46,7 +50,7 @@ export class WsjtxService {
     this.setupBehaviors();
   }
 
-  setupBehaviors(): void {
+  private setupBehaviors(): void {
     this.messages.rxMessage$.subscribe((msg) => this.handleMessage(msg));
     // if we haven't heard from WSJT-X in 15 seconds, consider it "down"
     this.connected$
@@ -193,6 +197,61 @@ export class WsjtxService {
       wsjtx: {
         type: 'HighlightCallsignMessage',
         payload: highlightMsg,
+      },
+    };
+    this.messages.txMessage$.next(wsMsg);
+  }
+
+  /**
+   * Send a command to WSJT-X to transmit the given free text. If the text is too long to be
+   * encoded in a single message, it may be silently truncated. */
+  public sendFreeText(freeText: WsjtxFreeText) {
+    freeText.id = this.wsjtxId;
+    const wsMsg = {
+      wsjtx: {
+        type: 'FreeTextMessage',
+        payload: freeText,
+      },
+    };
+    this.messages.txMessage$.next(wsMsg);
+  }
+
+  /** Send a command to WSJT-X to set the local station's Maidenhead grid. This is temporary,
+   * lasting only as long as WSJT-X is running. */
+  public setLocation(grid: string) {
+    const wsMsg = {
+      wsjtx: {
+        type: 'LocationMessage',
+        payload: <WsjtxLocation>{
+          id: this.wsjtxId,
+          location: grid,
+        },
+      },
+    };
+    this.messages.txMessage$.next(wsMsg);
+  }
+
+  /** Send a command to WSJT-X to switch to the named configuration. */
+  public switchConfiguration(configName: string) {
+    const wsMsg = {
+      wsjtx: {
+        type: 'SwitchConfigurationMessage',
+        payload: <WsjtxSwitchConfiguration>{
+          id: this.wsjtxId,
+          configurationName: configName,
+        },
+      },
+    };
+    this.messages.txMessage$.next(wsMsg);
+  }
+
+  /** Send a command to WSJT-X to set the given configuration parameters. */
+  public configure(config: WsjtxConfigure) {
+    config.id = this.wsjtxId;
+    const wsMsg = {
+      wsjtx: {
+        type: 'SwitchConfigurationMessage',
+        payload: config,
       },
     };
     this.messages.txMessage$.next(wsMsg);
