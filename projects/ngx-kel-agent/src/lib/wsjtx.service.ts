@@ -250,7 +250,7 @@ export class WsjtxService {
     config.id = this.wsjtxId;
     const wsMsg = {
       wsjtx: {
-        type: 'SwitchConfigurationMessage',
+        type: 'ConfigureMessage',
         payload: config,
       },
     };
