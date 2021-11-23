@@ -260,19 +260,23 @@ export class WsjtxService {
   /** Given a decode message, format a string the same way as displayed in the WSJT-X Band
    * Activity/Rx Frequency windows. */
   public static formatDecode(msg: WsjtxDecode): string {
-    const secondsSinceMidnight = Math.floor(msg.time / 1000);
-    const hours = Math.floor(secondsSinceMidnight / 3600);
-    const secondsSinceHour = secondsSinceMidnight - hours * 3600;
-    const minutes = Math.floor(secondsSinceHour / 60);
-    const seconds = secondsSinceHour - minutes * 60;
-    const timeStr = `${hours.toString().padStart(2, '0')}${minutes
-      .toString()
-      .padStart(2, '0')}${seconds.toString().padStart(2, '0')}`;
-
+    const timeStr = this.formatTime(msg.time);
     return `${timeStr} ${msg.snr.toString().padStart(3)} ${msg.deltaTime
       .toFixed(1)
       .padStart(4)} ${msg.deltaFrequency.toString().padStart(4)} ~  ${
       msg.message
     }`;
+  }
+
+  /** Given a time in milliseconds since midnight UTC, format as HHMMSS. */
+  public static formatTime(time: number) {
+    const secondsSinceMidnight = Math.floor(time / 1000);
+    const hours = Math.floor(secondsSinceMidnight / 3600);
+    const secondsSinceHour = secondsSinceMidnight - hours * 3600;
+    const minutes = Math.floor(secondsSinceHour / 60);
+    const seconds = secondsSinceHour - minutes * 60;
+    return `${hours.toString().padStart(2, '0')}${minutes
+      .toString()
+      .padStart(2, '0')}${seconds.toString().padStart(2, '0')}`;
   }
 }
