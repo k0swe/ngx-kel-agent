@@ -71,7 +71,7 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: '${{ secrets.GH_PAT }}'
-          add-paths: 'package*.json'
+          add-paths: 'projects/ngx-kel-agent/package*.json'
           commit-message: npm update (project)
           title: npm update (project)
           branch: npm-update-project
