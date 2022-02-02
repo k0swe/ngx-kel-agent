@@ -1,0 +1,78 @@
+name: npm update
+on: workflow_dispatch
+
+jobs:
+  npm-update-root:
+    name: npm update root
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.5.1
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cache node deps
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-deps
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: npm update
+        run: |
+          npm install
+          npm update
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: '${{ secrets.GH_PAT }}'
+          add-paths: 'package*.json'
+          commit-message: npm update (root)
+          title: npm update (root)
+          branch: npm-update-root
+          author: 'github-actions <github-actions@github.com>'
+
+  npm-update-project:
+    name: npm update project
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.5.1
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cache node deps
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-deps
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: npm update
+        working-directory: projects/ngx-kel-agent/
+        run: |
+          npm install
+          npm update
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: '${{ secrets.GH_PAT }}'
+          add-paths: 'package*.json'
+          commit-message: npm update (project)
+          title: npm update (project)
+          branch: npm-update-project
+          author: 'github-actions <github-actions@github.com>'
