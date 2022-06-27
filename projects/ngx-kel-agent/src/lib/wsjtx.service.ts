@@ -70,7 +70,7 @@ export class WsjtxService {
   }
 
   private handleMessage(msg: any): void {
-    if (!msg.wsjtx) {
+    if (!msg.wsjtx || !msg.wsjtx.type) {
       return;
     }
     this.connected$.next(true);

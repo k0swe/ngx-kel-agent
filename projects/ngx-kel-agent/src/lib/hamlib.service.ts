@@ -32,7 +32,7 @@ export class HamlibService {
   }
 
   private handleMessage(msg: any): void {
-    if (!msg.hamlib) {
+    if (!msg.hamlib || !msg.hamlib.type) {
       return;
     }
     this.connected$.next(true);
