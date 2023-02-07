@@ -30,7 +30,7 @@
     "@angular/cli": "14.2.10",
     "@angular/compiler-cli": "14.2.12",
     "@types/jasmine": "4.3.1",
-    "@types/node": "18.11.18",
+    "@types/node": "18.13.0",
     "husky": "8.0.3",
     "jasmine-core": "4.5.0",
     "karma": "6.4.1",
