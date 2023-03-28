@@ -14,7 +14,7 @@ jobs:
           node-version: '16'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Test & Build
         run: |
@@ -54,7 +54,7 @@ jobs:
           git config --global user.email github-actions@github.com
 
       - name: Checkout documentation
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: doc
           path: doc
