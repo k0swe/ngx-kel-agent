@@ -15,8 +15,8 @@
     "wsjtx"
   ],
   "peerDependencies": {
-    "@angular/common": ">=12 <16",
-    "@angular/core": ">=12 <16",
+    "@angular/common": ">=12 <17",
+    "@angular/core": ">=12 <17",
     "rxjs": ">=6 <8"
   },
   "dependencies": {
