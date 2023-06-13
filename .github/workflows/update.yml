@@ -26,7 +26,7 @@ jobs:
 
       - name: npm update
         run: |
-          npx npm-check-updates -u
+          npx npm-check-updates -u -x typescript
           npm install
           npm update
           npm install
@@ -66,8 +66,10 @@ jobs:
       - name: npm update
         working-directory: projects/ngx-kel-agent/
         run: |
+          npx npm-check-updates -u
           npm install
           npm update
+          npm install
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
