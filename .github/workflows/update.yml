@@ -27,7 +27,7 @@ jobs:
       - name: npm update
         run: |
           npx npm-check-updates -u -x typescript
-          npm install
+          npm install -f
           npm update
           npm install
 
@@ -67,7 +67,7 @@ jobs:
         working-directory: projects/ngx-kel-agent/
         run: |
           npx npm-check-updates -u
-          npm install
+          npm install -f
           npm update
           npm install
 
