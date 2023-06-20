@@ -29,7 +29,7 @@
     "@angular-devkit/build-angular": "16.0.5",
     "@angular/cli": "16.0.5",
     "@angular/compiler-cli": "16.0.5",
-    "@types/jasmine": "4.3.2",
+    "@types/jasmine": "4.3.4",
     "@types/node": "20.3.1",
     "husky": "8.0.3",
     "jasmine-core": "5.0.1",
