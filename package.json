@@ -42,7 +42,7 @@
     "ng-packagr": "16.2.3",
     "prettier": "3.0.3",
     "typedoc": "0.25.1",
-    "typescript": "5.1.6"
+    "typescript": "5.2.2"
   },
   "lint-staged": {
     "*.{js,ts,json,html,css,scss,md,yml,yaml,webmanifest}": "prettier --write"
