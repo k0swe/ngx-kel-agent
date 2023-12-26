@@ -33,7 +33,7 @@ jobs:
 
       - name: Version Bump
         id: version-bump
-        uses: phips28/gh-action-bump-version@v9.1.6
+        uses: phips28/gh-action-bump-version@v10.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PACKAGEJSON_DIR: projects/ngx-kel-agent/
