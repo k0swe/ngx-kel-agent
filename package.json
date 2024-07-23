@@ -41,7 +41,7 @@
     "lint-staged": "15.2.7",
     "ng-packagr": "18.1.0",
     "prettier": "3.3.3",
-    "typedoc": "0.26.4",
+    "typedoc": "0.26.5",
     "typescript": "5.4.5"
   },
   "lint-staged": {
