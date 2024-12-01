@@ -108,7 +108,7 @@ export class AgentService {
   constructor(
     private messages: AgentMessageService,
     private hamlibService: HamlibService,
-    private wsjtxService: WsjtxService
+    private wsjtxService: WsjtxService,
   ) {
     this.hamlibState$ = this.hamlibService.connected$;
     this.hamlibRigState$ = this.hamlibService.rigState$;
@@ -149,9 +149,9 @@ export class AgentService {
           // retry the websocket connection after 10 seconds
           errors.pipe(
             tap(() => this.connectedState$.next(false)),
-            delay(10000)
-          )
-        )
+            delay(10000),
+          ),
+        ),
       )
       .subscribe({
         next: (msg) => {
