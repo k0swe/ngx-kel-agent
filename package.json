@@ -38,7 +38,7 @@
     "karma-coverage": "2.2.1",
     "karma-jasmine": "5.1.0",
     "karma-jasmine-html-reporter": "2.1.0",
-    "lint-staged": "15.2.10",
+    "lint-staged": "15.2.11",
     "ng-packagr": "19.0.1",
     "prettier": "3.4.2",
     "typedoc": "0.27.4",
