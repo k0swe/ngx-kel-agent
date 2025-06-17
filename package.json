@@ -9,7 +9,7 @@
     "test": "ng test",
     "test-ci": "ng test --source-map=false --browsers=ChromeHeadless --watch=false",
     "typedoc": "typedoc",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "private": true,
   "dependencies": {
