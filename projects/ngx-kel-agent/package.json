@@ -5,7 +5,7 @@
   "homepage": "https://github.com/k0swe/ngx-kel-agent/tree/main/projects/ngx-kel-agent#readme",
   "repository": {
     "type": "git",
-    "url": "github:k0swe/ngx-kel-agent"
+    "url": "git@github.com:k0swe/ngx-kel-agent.git"
   },
   "keywords": [
     "amateur radio",
@@ -15,9 +15,9 @@
     "wsjtx"
   ],
   "peerDependencies": {
-    "@angular/common": ">=17 <20",
-    "@angular/core": ">=17 <20",
-    "rxjs": ">=6 <8"
+    "@angular/common": ">=17 <22",
+    "@angular/core": ">=17 <22",
+    "rxjs": ">=6 <9"
   },
   "dependencies": {
     "tslib": "2.8.1"
