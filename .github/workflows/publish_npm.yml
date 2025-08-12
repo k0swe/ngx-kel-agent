@@ -23,7 +23,7 @@ jobs:
           node-version: '22'
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Test & Build
         run: |
@@ -65,7 +65,7 @@ jobs:
           git config --global user.email github-actions@github.com
 
       - name: Checkout documentation
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: doc
           path: doc
