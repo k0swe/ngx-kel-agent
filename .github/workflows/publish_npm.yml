@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v6.0.0
@@ -65,7 +65,7 @@ jobs:
           git config --global user.email github-actions@github.com
 
       - name: Checkout documentation
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: doc
           path: doc
