@@ -1,5 +1,5 @@
 [![npm](https://badgen.net/npm/v/ngx-kel-agent)](https://www.npmjs.com/package/ngx-kel-agent)
-[![Test](https://github.com/k0swe/ngx-kel-agent/workflows/Test/badge.svg?branch=main)](https://github.com/k0swe/ngx-kel-agent/actions?query=workflow%3ATest+branch%3Amain)
+[![Test](https://github.com/k0swe/ngx-kel-agent/actions/workflows/test.yml/badge.svg)](https://github.com/k0swe/ngx-kel-agent/actions/workflows/test.yml)
 
 # ngx-kel-agent
 
