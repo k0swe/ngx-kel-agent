@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 import { NgxKelAgentComponent } from './ngx-kel-agent.component';
 
@@ -9,6 +10,7 @@ describe('NgxKelAgentComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [NgxKelAgentComponent],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
   });
 
