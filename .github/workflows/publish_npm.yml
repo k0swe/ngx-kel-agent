@@ -53,6 +53,7 @@ jobs:
           npm run build
 
       - name: Publish
+        working-directory: dist/ngx-kel-agent
         run: npm publish
 
       - name: Create Release
