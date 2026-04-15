@@ -1,5 +1,11 @@
 import { AgentMessageService } from './agent-message.service';
-import { BehaviorSubject, ReplaySubject, Subject, Subscription } from 'rxjs';
+import {
+  BehaviorSubject,
+  ReplaySubject,
+  Subject,
+  Subscription,
+  timer,
+} from 'rxjs';
 import { HamlibRigState } from './hamlib-messages';
 import { HamlibService } from './hamlib.service';
 import { Injectable } from '@angular/core';
@@ -15,7 +21,7 @@ import {
   WsjtxWsprDecode,
 } from './wsjtx-messages';
 import { WsjtxService } from './wsjtx.service';
-import { delay, retryWhen, tap } from 'rxjs/operators';
+import { retry } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
 @Injectable({
@@ -104,6 +110,7 @@ export class AgentService {
   private agentPort: number = this.defaultAgentPort;
   private agentWebSocketSubject: WebSocketSubject<object> | null = null;
   private agentWebsocketSubscription: Subscription | null = null;
+  private txMessageSubscription: Subscription | null = null;
 
   constructor(
     private messages: AgentMessageService,
@@ -125,7 +132,11 @@ export class AgentService {
   }
 
   public init(): void {
-    this.messages.txMessage$.subscribe((msg) => this.send(msg));
+    if (!this.txMessageSubscription) {
+      this.txMessageSubscription = this.messages.txMessage$.subscribe((msg) =>
+        this.send(msg),
+      );
+    }
     this.agentHost = this.getHost();
     this.agentPort = this.getPort();
     this.connect();
@@ -141,21 +152,21 @@ export class AgentService {
     const protocol = this.agentHost === 'localhost' ? 'ws://' : 'wss://';
     this.agentWebSocketSubject = webSocket<object>({
       url: protocol + this.agentHost + ':' + this.agentPort + '/websocket',
+      openObserver: {
+        next: () => this.connectedState$.next(true),
+      },
     });
-    this.connectedState$.next(true);
     this.agentWebsocketSubscription = this.agentWebSocketSubject
       .pipe(
-        retryWhen((errors) =>
-          // retry the websocket connection after 10 seconds
-          errors.pipe(
-            tap(() => this.connectedState$.next(false)),
-            delay(10000),
-          ),
-        ),
+        retry({
+          delay: () => {
+            this.connectedState$.next(false);
+            return timer(10000);
+          },
+        }),
       )
       .subscribe({
         next: (msg) => {
-          this.connectedState$.next(true);
           this.messages.rxMessage$.next(msg);
         },
         error: () => this.connectedState$.next(false),

@@ -18,7 +18,7 @@ import {
   WsjtxSwitchConfiguration,
   WsjtxWsprDecode,
 } from './wsjtx-messages';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, filter } from 'rxjs/operators';
 import { AgentMessageService } from './agent-message.service';
 
 @Injectable({
@@ -54,7 +54,10 @@ export class WsjtxService {
     this.messages.rxMessage$.subscribe((msg) => this.handleMessage(msg));
     // if we haven't heard from WSJT-X in 15 seconds, consider it "down"
     this.connected$
-      .pipe(debounceTime(15000))
+      .pipe(
+        filter((isUp) => isUp),
+        debounceTime(15000),
+      )
       .subscribe(() => this.connected$.next(false));
     // When WSJT-X announces it's closing, set it to "down" immediately
     this.close$.subscribe(() => {

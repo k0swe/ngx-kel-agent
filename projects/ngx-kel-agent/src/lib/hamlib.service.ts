@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { HamlibRigState } from './hamlib-messages';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, filter } from 'rxjs/operators';
 import { AgentMessageService } from './agent-message.service';
 
 @Injectable({
@@ -20,9 +20,14 @@ export class HamlibService {
   setupBehaviors(): void {
     this.messages.rxMessage$.subscribe((msg) => this.handleMessage(msg));
     // if we haven't heard from Hamlib in 15 seconds, consider it down
-    this.connected$.pipe(debounceTime(15000)).subscribe(() => {
-      this.connected$.next(false);
-    });
+    this.connected$
+      .pipe(
+        filter((isUp) => isUp),
+        debounceTime(15000),
+      )
+      .subscribe(() => {
+        this.connected$.next(false);
+      });
     // When Hamlib goes down, clear its persistent message subjects
     this.connected$.subscribe((isUp) => {
       if (!isUp) {
