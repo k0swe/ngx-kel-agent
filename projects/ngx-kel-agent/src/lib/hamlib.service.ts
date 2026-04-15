@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { BehaviorSubject } from 'rxjs';
 import { HamlibRigState } from './hamlib-messages';
 import { debounceTime, filter } from 'rxjs/operators';
@@ -10,10 +11,17 @@ import { AgentMessageService } from './agent-message.service';
 export class HamlibService {
   /** Whether we're getting any messages from Hamlib. */
   public readonly connected$ = new BehaviorSubject<boolean>(false);
+  /** Signal indicating whether we're getting any messages from Hamlib. */
+  public readonly connected: Signal<boolean>;
+
   /** Subject for listening to Hamlib "RigState" messages. */
   public readonly rigState$ = new BehaviorSubject<HamlibRigState | null>(null);
+  /** Signal for the latest Hamlib "RigState" message. */
+  public readonly rigState: Signal<HamlibRigState | null>;
 
   constructor(private messages: AgentMessageService) {
+    this.connected = toSignal(this.connected$, { requireSync: true });
+    this.rigState = toSignal(this.rigState$, { requireSync: true });
     this.setupBehaviors();
   }
 

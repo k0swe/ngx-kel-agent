@@ -16,4 +16,8 @@ describe('AgentService', () => {
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
+
+  it('connected signal should start false', () => {
+    expect(service.connected()).toBeFalse();
+  });
 });

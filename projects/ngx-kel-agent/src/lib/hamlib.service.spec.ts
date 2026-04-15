@@ -16,4 +16,12 @@ describe('HamlibService', () => {
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
+
+  it('connected signal should start false', () => {
+    expect(service.connected()).toBeFalse();
+  });
+
+  it('rigState signal should start null', () => {
+    expect(service.rigState()).toBeNull();
+  });
 });
