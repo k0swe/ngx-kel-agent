@@ -8,7 +8,8 @@ import {
 } from 'rxjs';
 import { HamlibRigState } from './hamlib-messages';
 import { HamlibService } from './hamlib.service';
-import { Injectable } from '@angular/core';
+import { Injectable, Signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   WsjtxClear,
   WsjtxClose,
@@ -30,6 +31,8 @@ import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 export class AgentService {
   /** Whether we're connected to the agent. */
   public readonly connectedState$ = new BehaviorSubject<boolean>(false);
+  /** Signal indicating whether we're connected to the agent. */
+  public readonly connected: Signal<boolean>;
 
   /*  WSJT-X  */
   /**
@@ -117,6 +120,8 @@ export class AgentService {
     private hamlibService: HamlibService,
     private wsjtxService: WsjtxService,
   ) {
+    this.connected = toSignal(this.connectedState$, { requireSync: true });
+
     this.hamlibState$ = this.hamlibService.connected$;
     this.hamlibRigState$ = this.hamlibService.rigState$;
 

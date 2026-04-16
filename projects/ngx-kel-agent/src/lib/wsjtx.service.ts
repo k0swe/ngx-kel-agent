@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import {
   WsjtxClear,
@@ -27,26 +28,61 @@ import { AgentMessageService } from './agent-message.service';
 export class WsjtxService {
   /** Whether we're getting any messages from WSJT-X. */
   public readonly connected$ = new BehaviorSubject<boolean>(false);
+  /** Signal indicating whether we're getting any messages from WSJT-X. */
+  public readonly connected: Signal<boolean>;
+
   /** Subject for listening to WSJT-X "Heartbeat" messages. */
   public readonly heartbeat$ = new ReplaySubject<WsjtxHeartbeat | null>(1);
+  /** Signal for the latest WSJT-X "Heartbeat" message. */
+  public readonly heartbeat: Signal<WsjtxHeartbeat | null>;
+
   /** Subject for listening to WSJT-X "Status" messages. */
   public readonly status$ = new ReplaySubject<WsjtxStatus | null>(1);
+  /** Signal for the latest WSJT-X "Status" message. */
+  public readonly status: Signal<WsjtxStatus | null>;
+
   /** Subject for listening to WSJT-X "Decode" messages. */
   public readonly decode$ = new Subject<WsjtxDecode>();
+  /** Signal for the latest WSJT-X "Decode" message. */
+  public readonly decode: Signal<WsjtxDecode | null>;
+
   /** Subject for listening to WSJT-X "Clear" messages. */
   public readonly clear$ = new Subject<WsjtxClear>();
+  /** Signal for the latest WSJT-X "Clear" message. */
+  public readonly clear: Signal<WsjtxClear | null>;
+
   /** Subject for listening to WSJT-X "QsoLogged" messages. */
   public readonly qsoLogged$ = new Subject<WsjtxQsoLogged>();
+  /** Signal for the latest WSJT-X "QsoLogged" message. */
+  public readonly qsoLogged: Signal<WsjtxQsoLogged | null>;
+
   /** Subject for listening to WSJT-X "Close" messages. */
   public readonly close$ = new Subject<WsjtxClose>();
+  /** Signal for the latest WSJT-X "Close" message. */
+  public readonly close: Signal<WsjtxClose | null>;
+
   /** Subject for listening to WSJT-X "WsprDecode" messages. */
   public readonly wsprDecode$ = new Subject<WsjtxWsprDecode>();
+  /** Signal for the latest WSJT-X "WsprDecode" message. */
+  public readonly wsprDecode: Signal<WsjtxWsprDecode | null>;
+
   /** Subject for listening to WSJT-X "LoggedAdif" messages. */
   public readonly loggedAdif$ = new Subject<WsjtxLoggedAdif>();
+  /** Signal for the latest WSJT-X "LoggedAdif" message. */
+  public readonly loggedAdif: Signal<WsjtxLoggedAdif | null>;
 
   private wsjtxId: string = 'WSJT-X';
 
   constructor(private messages: AgentMessageService) {
+    this.connected = toSignal(this.connected$, { requireSync: true });
+    this.heartbeat = toSignal(this.heartbeat$, { initialValue: null });
+    this.status = toSignal(this.status$, { initialValue: null });
+    this.decode = toSignal(this.decode$, { initialValue: null });
+    this.clear = toSignal(this.clear$, { initialValue: null });
+    this.qsoLogged = toSignal(this.qsoLogged$, { initialValue: null });
+    this.close = toSignal(this.close$, { initialValue: null });
+    this.wsprDecode = toSignal(this.wsprDecode$, { initialValue: null });
+    this.loggedAdif = toSignal(this.loggedAdif$, { initialValue: null });
     this.setupBehaviors();
   }
 
