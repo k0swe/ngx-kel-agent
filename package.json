@@ -29,7 +29,7 @@
     "@angular/cli": "21.2.13",
     "@angular/compiler-cli": "21.2.14",
     "@types/jasmine": "6.0.0",
-    "@types/node": "25.7.0",
+    "@types/node": "25.9.1",
     "husky": "9.1.7",
     "jasmine-core": "6.2.0",
     "karma": "6.4.4",
