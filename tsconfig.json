@@ -2,7 +2,6 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
@@ -14,15 +13,14 @@
     "sourceMap": true,
     "paths": {
       "ngx-kel-agent": [
-        "dist/ngx-kel-agent/ngx-kel-agent",
-        "dist/ngx-kel-agent"
+        "./dist/ngx-kel-agent/ngx-kel-agent",
+        "./dist/ngx-kel-agent"
       ]
     },
     "declaration": false,
     "experimentalDecorators": true,
     "moduleResolution": "bundler",
     "importHelpers": true,
-    "ignoreDeprecations": "6.0",
     "target": "ES2022",
     "module": "es2020",
     "useDefineForClassFields": false
