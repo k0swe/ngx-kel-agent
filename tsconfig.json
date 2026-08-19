@@ -22,6 +22,7 @@
     "experimentalDecorators": true,
     "moduleResolution": "bundler",
     "importHelpers": true,
+    "ignoreDeprecations": "6.0",
     "target": "ES2022",
     "module": "es2020",
     "useDefineForClassFields": false
