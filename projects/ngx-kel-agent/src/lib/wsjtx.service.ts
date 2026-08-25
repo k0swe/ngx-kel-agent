@@ -1,6 +1,6 @@
-import { Injectable, Signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
+import { DestroyRef, Injectable, Signal, inject } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { BehaviorSubject, ReplaySubject, Subject, debounceTime, filter } from 'rxjs';
 import {
   WsjtxClear,
   WsjtxClose,
@@ -19,8 +19,11 @@ import {
   WsjtxSwitchConfiguration,
   WsjtxWsprDecode,
 } from './wsjtx-messages';
-import { debounceTime, filter } from 'rxjs/operators';
-import { AgentMessageService } from './agent-message.service';
+import {
+  AgentIncomingMessage,
+  AgentMessageService,
+  AgentOutgoingMessage,
+} from './agent-message.service';
 
 @Injectable({
   providedIn: 'root',
@@ -72,8 +75,10 @@ export class WsjtxService {
   public readonly loggedAdif: Signal<WsjtxLoggedAdif | null>;
 
   private wsjtxId: string = 'WSJT-X';
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly messages = inject(AgentMessageService);
 
-  constructor(private messages: AgentMessageService) {
+  constructor() {
     this.connected = toSignal(this.connected$, { requireSync: true });
     this.heartbeat = toSignal(this.heartbeat$, { initialValue: null });
     this.status = toSignal(this.status$, { initialValue: null });
@@ -87,20 +92,23 @@ export class WsjtxService {
   }
 
   private setupBehaviors(): void {
-    this.messages.rxMessage$.subscribe((msg) => this.handleMessage(msg));
+    this.messages.rxMessage$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((msg) => this.handleMessage(msg));
     // if we haven't heard from WSJT-X in 15 seconds, consider it "down"
     this.connected$
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         filter((isUp) => isUp),
         debounceTime(15000),
       )
       .subscribe(() => this.connected$.next(false));
     // When WSJT-X announces it's closing, set it to "down" immediately
-    this.close$.subscribe(() => {
+    this.close$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.connected$.next(false);
     });
     // When WSJT-X goes down, clear its persistent message subjects
-    this.connected$.subscribe((isUp) => {
+    this.connected$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((isUp) => {
       if (!isUp) {
         this.heartbeat$.next(null);
         this.status$.next(null);
@@ -108,7 +116,7 @@ export class WsjtxService {
     });
   }
 
-  private handleMessage(msg: any): void {
+  private handleMessage(msg: AgentIncomingMessage): void {
     if (!msg.wsjtx || !msg.wsjtx.type) {
       return;
     }
@@ -144,7 +152,7 @@ export class WsjtxService {
 
   /** Send a command to WSJT-X to clear the Band Activity window. */
   public clearBandActivity() {
-    const wsMsg = {
+    const wsMsg: AgentOutgoingMessage = {
       wsjtx: {
         type: 'ClearMessage',
         payload: <WsjtxClear>{ id: this.wsjtxId, window: 0 },
@@ -155,7 +163,7 @@ export class WsjtxService {
 
   /** Send a command to WSJT-X to clear the Rx Frequency window. */
   public clearRxFreqWindow() {
-    const wsMsg = {
+    const wsMsg: AgentOutgoingMessage = {
       wsjtx: {
         type: 'ClearMessage',
         payload: <WsjtxClear>{ id: this.wsjtxId, window: 1 },
@@ -166,7 +174,7 @@ export class WsjtxService {
 
   /** Send a command to WSJT-X to clear the Band Activity and Rx Frequency windows. */
   public clearAll() {
-    const wsMsg = {
+    const wsMsg: AgentOutgoingMessage = {
       wsjtx: {
         type: 'ClearMessage',
         payload: <WsjtxClear>{ id: this.wsjtxId, window: 2 },
@@ -178,7 +186,7 @@ export class WsjtxService {
   /** Send a command to WSJT-X to replay messages. Useful for a fresh client that wants to hear
    * previous WSJT-X decodes. */
   public replay() {
-    const wsMsg = {
+    const wsMsg: AgentOutgoingMessage = {
       wsjtx: {
         type: 'ReplayMessage',
         payload: <WsjtxReplay>{ id: this.wsjtxId },
@@ -189,7 +197,7 @@ export class WsjtxService {
 
   /** Send a command to WSJT-X to halt any transmissions immediately. */
   public haltTxNow() {
-    const wsMsg = {
+    const wsMsg: AgentOutgoingMessage = {
       wsjtx: {
         type: 'HaltTxMessage',
         payload: <WsjtxHaltTx>{ id: this.wsjtxId, autoTxOnly: false },
@@ -200,7 +208,7 @@ export class WsjtxService {
 
   /** Send a command to WSJT-X to stop auto-transmitting after finishing the current round. */
   public haltTxAfterCurrent() {
-    const wsMsg = {
+    const wsMsg: AgentOutgoingMessage = {
       wsjtx: {
         type: 'HaltTxMessage',
         payload: <WsjtxHaltTx>{ id: this.wsjtxId, autoTxOnly: true },
@@ -211,7 +219,7 @@ export class WsjtxService {
 
   /** Send a command to WSJT-X to reply to the given decode. The message must include CQ or QRZ. */
   public reply(decode: WsjtxDecode) {
-    const wsMsg = {
+    const wsMsg: AgentOutgoingMessage = {
       wsjtx: {
         type: 'ReplyMessage',
         payload: <WsjtxReply>{
@@ -232,7 +240,7 @@ export class WsjtxService {
   /** Send a command to WSJT-X to reply to the given decode. The message must include CQ or QRZ. */
   public highlightCallsign(highlightMsg: WsjtxHighlightCallsign) {
     highlightMsg.id = this.wsjtxId;
-    const wsMsg = {
+    const wsMsg: AgentOutgoingMessage = {
       wsjtx: {
         type: 'HighlightCallsignMessage',
         payload: highlightMsg,
@@ -246,7 +254,7 @@ export class WsjtxService {
    * encoded in a single message, it may be silently truncated. */
   public sendFreeText(freeText: WsjtxFreeText) {
     freeText.id = this.wsjtxId;
-    const wsMsg = {
+    const wsMsg: AgentOutgoingMessage = {
       wsjtx: {
         type: 'FreeTextMessage',
         payload: freeText,
@@ -258,7 +266,7 @@ export class WsjtxService {
   /** Send a command to WSJT-X to set the local station's Maidenhead grid. This is temporary,
    * lasting only as long as WSJT-X is running. */
   public setLocation(grid: string) {
-    const wsMsg = {
+    const wsMsg: AgentOutgoingMessage = {
       wsjtx: {
         type: 'LocationMessage',
         payload: <WsjtxLocation>{
@@ -272,7 +280,7 @@ export class WsjtxService {
 
   /** Send a command to WSJT-X to switch to the named configuration. */
   public switchConfiguration(configName: string) {
-    const wsMsg = {
+    const wsMsg: AgentOutgoingMessage = {
       wsjtx: {
         type: 'SwitchConfigurationMessage',
         payload: <WsjtxSwitchConfiguration>{
@@ -287,7 +295,7 @@ export class WsjtxService {
   /** Send a command to WSJT-X to set the given configuration parameters. */
   public configure(config: WsjtxConfigure) {
     config.id = this.wsjtxId;
-    const wsMsg = {
+    const wsMsg: AgentOutgoingMessage = {
       wsjtx: {
         type: 'ConfigureMessage',
         payload: config,

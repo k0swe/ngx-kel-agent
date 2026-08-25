@@ -1,9 +1,11 @@
-import { Injectable, Signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { BehaviorSubject } from 'rxjs';
+import { DestroyRef, Injectable, Signal, inject } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { BehaviorSubject, debounceTime, filter } from 'rxjs';
 import { HamlibRigState } from './hamlib-messages';
-import { debounceTime, filter } from 'rxjs/operators';
-import { AgentMessageService } from './agent-message.service';
+import {
+  AgentIncomingMessage,
+  AgentMessageService,
+} from './agent-message.service';
 
 @Injectable({
   providedIn: 'root',
@@ -19,17 +21,23 @@ export class HamlibService {
   /** Signal for the latest Hamlib "RigState" message. */
   public readonly rigState: Signal<HamlibRigState | null>;
 
-  constructor(private messages: AgentMessageService) {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly messages = inject(AgentMessageService);
+
+  constructor() {
     this.connected = toSignal(this.connected$, { requireSync: true });
     this.rigState = toSignal(this.rigState$, { requireSync: true });
     this.setupBehaviors();
   }
 
-  setupBehaviors(): void {
-    this.messages.rxMessage$.subscribe((msg) => this.handleMessage(msg));
+  private setupBehaviors(): void {
+    this.messages.rxMessage$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((msg) => this.handleMessage(msg));
     // if we haven't heard from Hamlib in 15 seconds, consider it down
     this.connected$
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         filter((isUp) => isUp),
         debounceTime(15000),
       )
@@ -37,22 +45,20 @@ export class HamlibService {
         this.connected$.next(false);
       });
     // When Hamlib goes down, clear its persistent message subjects
-    this.connected$.subscribe((isUp) => {
+    this.connected$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((isUp) => {
       if (!isUp) {
         this.rigState$.next(null);
       }
-    });
+      });
   }
 
-  private handleMessage(msg: any): void {
-    if (!msg.hamlib || !msg.hamlib.type) {
+  private handleMessage(msg: AgentIncomingMessage): void {
+    if (!msg.hamlib || msg.hamlib.type !== 'RigState') {
       return;
     }
     this.connected$.next(true);
-    switch (msg.hamlib.type) {
-      case 'RigState':
-        this.rigState$.next(msg.hamlib.payload as HamlibRigState);
-        return;
-    }
+    this.rigState$.next(msg.hamlib.payload as HamlibRigState);
   }
 }

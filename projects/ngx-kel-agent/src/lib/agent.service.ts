@@ -1,15 +1,20 @@
-import { AgentMessageService } from './agent-message.service';
+import {
+  AgentIncomingMessage,
+  AgentMessageService,
+  AgentOutgoingMessage,
+} from './agent-message.service';
 import {
   BehaviorSubject,
   ReplaySubject,
   Subject,
   Subscription,
+  retry,
   timer,
 } from 'rxjs';
 import { HamlibRigState } from './hamlib-messages';
 import { HamlibService } from './hamlib.service';
-import { Injectable, Signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { DestroyRef, Injectable, Signal, inject } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
   WsjtxClear,
   WsjtxClose,
@@ -22,7 +27,6 @@ import {
   WsjtxWsprDecode,
 } from './wsjtx-messages';
 import { WsjtxService } from './wsjtx.service';
-import { retry } from 'rxjs/operators';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
 @Injectable({
@@ -104,6 +108,11 @@ export class AgentService {
    */
   public readonly hamlibRigState$: BehaviorSubject<HamlibRigState | null>;
 
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly messages = inject(AgentMessageService);
+  private readonly hamlibService = inject(HamlibService);
+  private readonly wsjtxService = inject(WsjtxService);
+
   private readonly defaultAgentHost = 'localhost';
   private readonly defaultAgentPort = 8081;
   private readonly localStorageHostKey = 'agent-host';
@@ -113,13 +122,9 @@ export class AgentService {
   private agentPort: number = this.defaultAgentPort;
   private agentWebSocketSubject: WebSocketSubject<object> | null = null;
   private agentWebsocketSubscription: Subscription | null = null;
-  private txMessageSubscription: Subscription | null = null;
+  private txForwardingInitialized = false;
 
-  constructor(
-    private messages: AgentMessageService,
-    private hamlibService: HamlibService,
-    private wsjtxService: WsjtxService,
-  ) {
+  constructor() {
     this.connected = toSignal(this.connectedState$, { requireSync: true });
 
     this.hamlibState$ = this.hamlibService.connected$;
@@ -137,26 +142,17 @@ export class AgentService {
   }
 
   public init(): void {
-    if (!this.txMessageSubscription) {
-      this.txMessageSubscription = this.messages.txMessage$.subscribe((msg) =>
-        this.send(msg),
-      );
-    }
-    this.agentHost = this.getHost();
-    this.agentPort = this.getPort();
+    this.ensureTxMessageForwarding();
+    this.loadConnectionConfig();
     this.connect();
   }
 
   /** Connect (or reconnect) the websocket to the kel-agent server. */
   public connect(): void {
-    if (this.agentWebsocketSubscription) {
-      this.agentWebsocketSubscription.unsubscribe();
-    }
-    this.agentHost = this.getHost();
-    this.agentPort = this.getPort();
-    const protocol = this.agentHost === 'localhost' ? 'ws://' : 'wss://';
+    this.disconnectWebSocket();
+    this.loadConnectionConfig();
     this.agentWebSocketSubject = webSocket<object>({
-      url: protocol + this.agentHost + ':' + this.agentPort + '/websocket',
+      url: this.getWebsocketUrl(),
       openObserver: {
         next: () => this.connectedState$.next(true),
       },
@@ -171,9 +167,7 @@ export class AgentService {
         }),
       )
       .subscribe({
-        next: (msg) => {
-          this.messages.rxMessage$.next(msg);
-        },
+        next: (msg) => this.messages.rxMessage$.next(msg as AgentIncomingMessage),
         error: () => this.connectedState$.next(false),
         complete: () => this.connectedState$.next(false),
       });
@@ -211,7 +205,34 @@ export class AgentService {
     this.connect();
   }
 
-  private send(wsMsg: any) {
+  private ensureTxMessageForwarding(): void {
+    if (this.txForwardingInitialized) {
+      return;
+    }
+    this.txForwardingInitialized = true;
+    this.messages.txMessage$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((msg) => this.send(msg));
+  }
+
+  private loadConnectionConfig(): void {
+    this.agentHost = this.getHost();
+    this.agentPort = this.getPort();
+  }
+
+  private disconnectWebSocket(): void {
+    if (this.agentWebsocketSubscription) {
+      this.agentWebsocketSubscription.unsubscribe();
+      this.agentWebsocketSubscription = null;
+    }
+  }
+
+  private getWebsocketUrl(): string {
+    const protocol = this.agentHost === 'localhost' ? 'ws://' : 'wss://';
+    return protocol + this.agentHost + ':' + this.agentPort + '/websocket';
+  }
+
+  private send(wsMsg: AgentOutgoingMessage): void {
     this.agentWebSocketSubject?.next(wsMsg);
   }
 
