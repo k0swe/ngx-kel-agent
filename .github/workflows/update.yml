@@ -26,7 +26,7 @@ jobs:
 
       - name: npm update
         run: |
-          npx npm-check-updates -u -x typescript,zone.js
+          npx npm-check-updates -u --peer
           npm install -f
           npm update
           npm install
@@ -66,7 +66,7 @@ jobs:
       - name: npm update
         working-directory: projects/ngx-kel-agent/
         run: |
-          npx npm-check-updates -u
+          npx npm-check-updates -u --peer
           npm install -f
           npm update
           npm install
